@@ -10,6 +10,7 @@ from langchain.prompts import PromptTemplate
 import configparser
 import glob
 import os
+import datetime
 
 # 環境ファイル読み込み
 config_ini = configparser.ConfigParser()
@@ -37,6 +38,9 @@ def get_webpage(root_path, urllist_path):
             for line in lines:
                 url_list.append(line.strip())
         
+        if len(url_list)==0:
+            return "WEBページ取得に失敗しました。詳細：URLを追加してください。"
+        
         # WEBページを読み込み
         for index, url in enumerate(url_list):
             filename = root_path + "webpage{}.txt".format(index)
@@ -48,7 +52,14 @@ def get_webpage(root_path, urllist_path):
             # WEBページ本文を保存
             with open(filename, "w", encoding="utf-8") as f:
                 f.write(html_content)
-            
+        
+        # URLリストバックアップ
+        now = datetime.datetime.now()
+        os.rename(urllist_path, urllist_path.replace('.txt','')+'_'+now.strftime('%Y%m%d_%H%M%S')+'.txt')
+        if not os.path.isfile(urllist_path):
+            with open(urllist_path,"w"):
+                pass
+        
     except Exception as e:
         return "WEBページ取得に失敗しました。詳細：" + str(e)
 
@@ -70,6 +81,9 @@ def update_database(root_path, model_name):
         for file in glob.glob(root_path+"/*.pdf"):
             loader= PyPDFLoader(file)
             docs.extend(loader.load_and_split())
+        
+        if len(docs)==0:
+            return "DB更新に失敗しました。詳細：読み込むファイルがありません。"
 
         # 全文章を決まった長さの文章（チャンク）に分割して、文章データベースを作成
         text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(

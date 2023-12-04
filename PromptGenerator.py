@@ -31,7 +31,7 @@ if not os.path.isfile(urllist_path):
 init_result = rag.read_db(model_name)
 
 # プロンプト生成
-def generate_prompt():
+def generate_prompt(event = None):
     input_text = entry.get()
     if input_text == "":
         msg = "質問を入力してください。"
@@ -58,18 +58,19 @@ def clear_result():
     count_label.config(text="")
 
 # データベース更新
-def update_database():
+def update_database():    
     res = rag.update_database(load_data_path, model_name)
     if res is not None:
         message_text.insert(0.0, res + "\n")
-    tkinter.messagebox.showinfo("DB更新", "データベースが更新されました。")
+    
+    tkinter.messagebox.showinfo("DB更新", "データベース更新処理完了しました。")    
 
 # WEBページ取得
 def get_webpage():
     res = rag.get_webpage(load_data_path, urllist_path)
     if res is not None:
         message_text.insert(0.0, res + "\n")
-    tkinter.messagebox.showinfo("WEBページ取得", "WEBページ取得が完了しました。")
+    tkinter.messagebox.showinfo("WEBページ取得", "WEBページ取得処理完了しました。")
 
 # アプリケーション終了
 def exit_application():
@@ -104,6 +105,7 @@ question_label.pack(anchor=tk.W)
 
 entry = tk.Entry(entry_frame1, width=30)
 entry.pack(side=tk.LEFT)
+entry.bind('<Return>', generate_prompt)
 
 generate_button = tk.Button(entry_frame1, text="プロンプト生成", command=generate_prompt)
 generate_button.pack(side=tk.LEFT, padx=10)
